@@ -174,51 +174,52 @@ class IcmpHelperLibrary:
             # Hint: Work through comparing each value and identify if this is a valid response.
             # checks if sequence number, identified, and data of packet echoed back is the
             # same as current self packet
-            print("Type")
-            print(self.getIcmpType())
-            print(icmpReplyPacket.getIcmpType())
+
+            # checks valid type if not valid prints out bug message
             if 0 == icmpReplyPacket.getIcmpType():
                 icmpReplyPacket.setIsValidType(True)
-                print("Type True")
+            else:
+                print("Expected Type: %d, type received: %d" % (self.getIcmpType(), icmpReplyPacket.getIcmpType()))
 
-            print("Code")
-            print(self.getIcmpCode())
-            print(icmpReplyPacket.getIcmpCode())
+            # checks valid code if not valid prints out bug message
             if self.getIcmpCode() == icmpReplyPacket.getIcmpCode():
                 icmpReplyPacket.setIsValidCode(True)
-                print("Code True")
+            else:
+                print("Expected Code: %d, code received: %d" % (self.getIcmpCode(), icmpReplyPacket.getIcmpCode()))
 
-            print("Checksum")
-            print(self.getPacketChecksum())
-            print(icmpReplyPacket.getIcmpHeaderChecksum())
-            if self.getPacketChecksum() + 2040 == icmpReplyPacket.getIcmpHeaderChecksum():
+            # checks valid checksum if not valid prints out bug message
+            if self.getPacketChecksum() + 2048 == icmpReplyPacket.getIcmpHeaderChecksum():
                 icmpReplyPacket.setIsValidHeaderChecksum(True)
-                print("Checksum True")
-            print("Packet Identifiers")
-            print(self.getPacketIdentifier())
-            print(icmpReplyPacket.getIcmpIdentifier())
+            else:
+                print("Expected checksum: %d, checksum received: %d" % (self.getPacketChecksum() + 2048, icmpReplyPacket.getIcmpHeaderChecksum()))
+
+            # checks valid identifier if not valid prints out bug message
             if self.getPacketIdentifier() == icmpReplyPacket.getIcmpIdentifier():
                 icmpReplyPacket.setIsValidIdentifier(True)
-                print("Identifier True")
-            print("Packet Sequence Numbers")
-            print(self.getPacketSequenceNumber())
-            print(icmpReplyPacket.getIcmpSequenceNumber())
+            else:
+                print("Expected checksum: %d, checksum received: %d" % (self.getPacketIdentifier(), icmpReplyPacket.getIcmpIdentifier()))
+
+            # checks valid sequence number if not valid prints out bug message
             if self.getPacketSequenceNumber() == icmpReplyPacket.getIcmpSequenceNumber():
                 icmpReplyPacket.setIsValidSequenceNumber(True)
-                print("Sequence Number True")
-            print("Icmp Data")
-            print(self.getDataRaw())
-            print(self.getDataRaw())
+            else:
+                print("Expected sequence number: %d, sequence number received: %d" % (
+                    self.getPacketSequenceNumber(), icmpReplyPacket.getIcmpSequenceNumber()))
+
+            # checks valid data if not valid prints out bug message
             if self.getDataRaw() == icmpReplyPacket.getIcmpData():
                 icmpReplyPacket.setIsValidIcmpData(True)
-                print("Data True")
+            else:
+                print("Expected data: %s, data received: %s" % (
+                    self.getDataRaw(), icmpReplyPacket.getIcmpData()))
 
-            if self.getPacketSequenceNumber() == icmpReplyPacket.getIcmpSequenceNumber() \
-                    and self.getPacketIdentifier() == icmpReplyPacket.getIcmpIdentifier() \
-                    and self.getDataRaw() == icmpReplyPacket.getIcmpData():
+            if icmpReplyPacket.getIsValidSequenceNumber() and icmpReplyPacket.getIsValidIdentifier() \
+                    and icmpReplyPacket.getIsValidIcmpData():
                 icmpReplyPacket.setIsValidResponse(True)
             else:
                 icmpReplyPacket.setIsValidResponse(False)
+
+
 
         # ############################################################################################################ #
         # IcmpPacket Class Public Functions                                                                            #
