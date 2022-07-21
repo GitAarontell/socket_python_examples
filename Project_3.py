@@ -486,6 +486,50 @@ class IcmpHelperLibrary:
         #                                                                                                              #
         # ############################################################################################################ #
         def printResultToConsole(self, ttl, timeReceived, addr):
+
+            if not self.getIsValidType():
+                print("Expected Type: %d, type received: %d" % (self.getIcmpType(), icmpReplyPacket.getIcmpType()))
+
+                # checks valid type if not valid prints out bug message
+                if 0 == icmpReplyPacket.getIcmpType():
+                    icmpReplyPacket.setIsValidType(True)
+                else:
+                    print("Expected Type: %d, type received: %d" % (self.getIcmpType(), icmpReplyPacket.getIcmpType()))
+
+                # checks valid code if not valid prints out bug message
+                if self.getIcmpCode() == icmpReplyPacket.getIcmpCode():
+                    icmpReplyPacket.setIsValidCode(True)
+                else:
+                    print("Expected Code: %d, code received: %d" % (self.getIcmpCode(), icmpReplyPacket.getIcmpCode()))
+
+                # checks valid checksum if not valid prints out bug message
+                if self.getPacketChecksum() + 2048 == icmpReplyPacket.getIcmpHeaderChecksum():
+                    icmpReplyPacket.setIsValidHeaderChecksum(True)
+                else:
+                    print("Expected checksum: %d, checksum received: %d" % (
+                    self.getPacketChecksum() + 2048, icmpReplyPacket.getIcmpHeaderChecksum()))
+
+                # checks valid identifier if not valid prints out bug message
+                if self.getPacketIdentifier() == icmpReplyPacket.getIcmpIdentifier():
+                    icmpReplyPacket.setIsValidIdentifier(True)
+                else:
+                    print("Expected checksum: %d, checksum received: %d" % (
+                    self.getPacketIdentifier(), icmpReplyPacket.getIcmpIdentifier()))
+
+                # checks valid sequence number if not valid prints out bug message
+                if self.getPacketSequenceNumber() == icmpReplyPacket.getIcmpSequenceNumber():
+                    icmpReplyPacket.setIsValidSequenceNumber(True)
+                else:
+                    print("Expected sequence number: %d, sequence number received: %d" % (
+                        self.getPacketSequenceNumber(), icmpReplyPacket.getIcmpSequenceNumber()))
+
+                # checks valid data if not valid prints out bug message
+                if self.getDataRaw() == icmpReplyPacket.getIcmpData():
+                    icmpReplyPacket.setIsValidIcmpData(True)
+                else:
+                    print("Expected data: %s, data received: %s" % (
+                        self.getDataRaw(), icmpReplyPacket.getIcmpData()))
+
             bytes = struct.calcsize("d")
             timeSent = struct.unpack("d", self.__recvPacket[28:28 + bytes])[0]
             print("  TTL=%d    RTT=%.0f ms    Type=%d    Code=%d        Identifier=%d    Sequence Number=%d    %s" %
