@@ -191,13 +191,15 @@ class IcmpHelperLibrary:
             if self.getPacketChecksum() + 2048 == icmpReplyPacket.getIcmpHeaderChecksum():
                 icmpReplyPacket.setIsValidHeaderChecksum(True)
             else:
-                print("Expected checksum: %d, checksum received: %d" % (self.getPacketChecksum() + 2048, icmpReplyPacket.getIcmpHeaderChecksum()))
+                print("Expected checksum: %d, checksum received: %d" % (
+                self.getPacketChecksum() + 2048, icmpReplyPacket.getIcmpHeaderChecksum()))
 
             # checks valid identifier if not valid prints out bug message
             if self.getPacketIdentifier() == icmpReplyPacket.getIcmpIdentifier():
                 icmpReplyPacket.setIsValidIdentifier(True)
             else:
-                print("Expected checksum: %d, checksum received: %d" % (self.getPacketIdentifier(), icmpReplyPacket.getIcmpIdentifier()))
+                print("Expected checksum: %d, checksum received: %d" % (
+                self.getPacketIdentifier(), icmpReplyPacket.getIcmpIdentifier()))
 
             # checks valid sequence number if not valid prints out bug message
             if self.getPacketSequenceNumber() == icmpReplyPacket.getIcmpSequenceNumber():
@@ -219,8 +221,6 @@ class IcmpHelperLibrary:
             else:
                 icmpReplyPacket.setIsValidResponse(False)
 
-
-
         # ############################################################################################################ #
         # IcmpPacket Class Public Functions                                                                            #
         #                                                                                                              #
@@ -236,13 +236,13 @@ class IcmpHelperLibrary:
             self.__dataRaw = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"  # set data to this string
             self.__packAndRecalculateChecksum()
 
-        def sendEchoRequest(self):
+        def sendEchoRequest(self, stats):
             # if there is no source ip or destination ip then set target IP to "127.0.0.1"
             if len(self.__icmpTarget.strip()) <= 0 | len(self.__destinationIpAddress.strip()) <= 0:
                 self.setIcmpTarget("127.0.0.1")
 
             print("Pinging (" + self.__icmpTarget + ") " + self.__destinationIpAddress)
-
+            # stats used for calculating minimum and max, avg, and packet loss
             mySocket = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)
             mySocket.settimeout(self.__ipTimeout)
             mySocket.bind(("", 0))
@@ -290,10 +290,11 @@ class IcmpHelperLibrary:
                               )
                               )
 
+
                     elif icmpType == 0:  # Echo Reply
                         icmpReplyPacket = IcmpHelperLibrary.IcmpPacket_EchoReply(recvPacket)
                         self.__validateIcmpReplyPacketWithOriginalPingData(icmpReplyPacket)
-                        icmpReplyPacket.printResultToConsole(self.getTtl(), timeReceived, addr)
+                        icmpReplyPacket.printResultToConsole(self.getTtl(), timeReceived, addr, self, stats)
                         return  # Echo reply is the end and therefore should return
 
                     else:
@@ -301,6 +302,7 @@ class IcmpHelperLibrary:
             except timeout:
                 print("  *        *        *        *        *    Request timed out (By Exception).")
             finally:
+
                 mySocket.close()
 
         def printIcmpPacketHeader_hex(self):
@@ -485,50 +487,25 @@ class IcmpHelperLibrary:
         #                                                                                                              #
         #                                                                                                              #
         # ############################################################################################################ #
-        def printResultToConsole(self, ttl, timeReceived, addr):
 
+        def printResultToConsole(self, ttl, timeReceived, addr, sentPacket, stats):
+
+            # if data is not valid print bug message for that specific data
             if not self.getIsValidType():
-                print("Expected Type: %d, type received: %d" % (self.getIcmpType(), icmpReplyPacket.getIcmpType()))
-
-                # checks valid type if not valid prints out bug message
-                if 0 == icmpReplyPacket.getIcmpType():
-                    icmpReplyPacket.setIsValidType(True)
-                else:
-                    print("Expected Type: %d, type received: %d" % (self.getIcmpType(), icmpReplyPacket.getIcmpType()))
-
-                # checks valid code if not valid prints out bug message
-                if self.getIcmpCode() == icmpReplyPacket.getIcmpCode():
-                    icmpReplyPacket.setIsValidCode(True)
-                else:
-                    print("Expected Code: %d, code received: %d" % (self.getIcmpCode(), icmpReplyPacket.getIcmpCode()))
-
-                # checks valid checksum if not valid prints out bug message
-                if self.getPacketChecksum() + 2048 == icmpReplyPacket.getIcmpHeaderChecksum():
-                    icmpReplyPacket.setIsValidHeaderChecksum(True)
-                else:
-                    print("Expected checksum: %d, checksum received: %d" % (
-                    self.getPacketChecksum() + 2048, icmpReplyPacket.getIcmpHeaderChecksum()))
-
-                # checks valid identifier if not valid prints out bug message
-                if self.getPacketIdentifier() == icmpReplyPacket.getIcmpIdentifier():
-                    icmpReplyPacket.setIsValidIdentifier(True)
-                else:
-                    print("Expected checksum: %d, checksum received: %d" % (
-                    self.getPacketIdentifier(), icmpReplyPacket.getIcmpIdentifier()))
-
-                # checks valid sequence number if not valid prints out bug message
-                if self.getPacketSequenceNumber() == icmpReplyPacket.getIcmpSequenceNumber():
-                    icmpReplyPacket.setIsValidSequenceNumber(True)
-                else:
-                    print("Expected sequence number: %d, sequence number received: %d" % (
-                        self.getPacketSequenceNumber(), icmpReplyPacket.getIcmpSequenceNumber()))
-
-                # checks valid data if not valid prints out bug message
-                if self.getDataRaw() == icmpReplyPacket.getIcmpData():
-                    icmpReplyPacket.setIsValidIcmpData(True)
-                else:
-                    print("Expected data: %s, data received: %s" % (
-                        self.getDataRaw(), icmpReplyPacket.getIcmpData()))
+                print("Type Bug: Expected: %d, Received: %d" % (0, self.getIcmpCode()))
+            if not self.getIsValidCode():
+                print("Code Bug: Expected: %d, Received: %d" % (sentPacket.getIcmpCode(), self.getIcmpCode()))
+            if not self.getIsValidHeaderChecksum():
+                print("Checksum Bug: Expected: %s, Received: %s" % (
+                sentPacket.getPacketChecksum() + 2048, self.getIcmpHeaderChecksum()))
+            if not self.getIsValidIdentifier():
+                print("Identifier Bug: Expected: %d, Received: %d" % (
+                sentPacket.getPacketIdentifier(), self.getIcmpIdentifier()))
+            if not self.getIsValidSequenceNumber():
+                print("Sequence Number Bug: Expected: %d, Received: %d" % (
+                sentPacket.getPacketSequenceNumber(), self.getIcmpSequenceNumber()))
+            if not self.getIsValidIcmpData():
+                print("Data Bug: Expected: %d, Received: %d" % (sentPacket.getDataRaw(), self.getIcmpData()))
 
             bytes = struct.calcsize("d")
             timeSent = struct.unpack("d", self.__recvPacket[28:28 + bytes])[0]
@@ -543,6 +520,12 @@ class IcmpHelperLibrary:
                       addr[0]
                   )
                   )
+            if stats[0] > (timeReceived - timeSent) * 1000:
+                stats[0] = (timeReceived - timeSent) * 1000
+            if stats[1] < (timeReceived - timeSent) * 1000:
+                stats[1] = (timeReceived - timeSent) * 1000
+            stats[2] = stats[2] + (timeReceived - timeSent) * 1000
+            stats[3] += 1
 
     # ################################################################################################################ #
     # Class IcmpHelperLibrary                                                                                          #
@@ -573,7 +556,7 @@ class IcmpHelperLibrary:
 
         # if the DEBUG variable is true then print the print statement else do nothing
         print("sendIcmpEchoRequest Started...") if self.__DEBUG_IcmpHelperLibrary else 0
-
+        stats = [1000000, 0, 0, 0]
         # loop 4 times with i values (0, 1, 2, 3)
         for i in range(4):
             # create icmp packet which is a class inside the IcmpHelper class. This function is currently inside the
@@ -597,11 +580,16 @@ class IcmpHelperLibrary:
             # calls recalculate check sum function
             icmpPacket.buildPacket_echoRequest(packetIdentifier, packetSequenceNumber)  # Build ICMP for IP payload
             icmpPacket.setIcmpTarget(host)
-            icmpPacket.sendEchoRequest()  # Build IP
 
+            icmpPacket.sendEchoRequest(stats)  # Build IP
             icmpPacket.printIcmpPacketHeader_hex() if self.__DEBUG_IcmpHelperLibrary else 0
             icmpPacket.printIcmpPacket_hex() if self.__DEBUG_IcmpHelperLibrary else 0
             # we should be confirming values are correct, such as identifier and sequence number and data
+
+        # prints out resulting end values
+        print("Packet sent %d, received: %d, lost %d (Percentage: %.0f%%)" % (
+            4, stats[3], 4 - stats[3], (stats[3] / 4) * 100))
+        print("Minimum: %dms, Maximum: %dms, Average: %dms" % (stats[0], stats[1], stats[2]/stats[3]))
 
     def __sendIcmpTraceRoute(self, host):
         print("sendIcmpTraceRoute Started...") if self.__DEBUG_IcmpHelperLibrary else 0
