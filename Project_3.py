@@ -180,25 +180,38 @@ class IcmpHelperLibrary:
             if 0 == icmpReplyPacket.getIcmpType():
                 icmpReplyPacket.setIsValidType(True)
                 print("Type True")
-            if self.getIcmpCode() == icmpReplyPacket.getIcmpCode():
-                icmpReplyPacket.setIsValidCode(True)
-                print("Code True")
+
             print("Code")
             print(self.getIcmpCode())
             print(icmpReplyPacket.getIcmpCode())
+            if self.getIcmpCode() == icmpReplyPacket.getIcmpCode():
+                icmpReplyPacket.setIsValidCode(True)
+                print("Code True")
+
             print("Checksum")
             print(self.getPacketChecksum())
             print(icmpReplyPacket.getIcmpHeaderChecksum())
+            if self.getPacketChecksum() + 2040 == icmpReplyPacket.getIcmpHeaderChecksum():
+                icmpReplyPacket.setIsValidHeaderChecksum(True)
+                print("Checksum True")
             print("Packet Identifiers")
             print(self.getPacketIdentifier())
             print(icmpReplyPacket.getIcmpIdentifier())
+            if self.getPacketIdentifier() == icmpReplyPacket.getIcmpIdentifier():
+                icmpReplyPacket.setIsValidIdentifier(True)
+                print("Identifier True")
             print("Packet Sequence Numbers")
             print(self.getPacketSequenceNumber())
             print(icmpReplyPacket.getIcmpSequenceNumber())
+            if self.getPacketSequenceNumber() == icmpReplyPacket.getIcmpSequenceNumber():
+                icmpReplyPacket.setIsValidSequenceNumber(True)
+                print("Sequence Number True")
             print("Icmp Data")
             print(self.getDataRaw())
             print(self.getDataRaw())
-
+            if self.getDataRaw() == icmpReplyPacket.getIcmpData():
+                icmpReplyPacket.setIsValidIcmpData(True)
+                print("Data True")
 
             if self.getPacketSequenceNumber() == icmpReplyPacket.getIcmpSequenceNumber() \
                     and self.getPacketIdentifier() == icmpReplyPacket.getIcmpIdentifier() \
@@ -452,6 +465,7 @@ class IcmpHelperLibrary:
 
         def setIsValidIcmpData(self, boolVal):
             self.__IcmpData_isValid = boolVal
+
         # ############################################################################################################ #
         # IcmpPacket_EchoReply Private Functions                                                                       #
         #                                                                                                              #
